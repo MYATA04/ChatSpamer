@@ -77,9 +77,13 @@ async def check_chat(chat_id: Union[int, str], chat_name: str) -> bool:
         logger.info(
             f"[MAILING] No mail was sent to the chat with ID - {chat_id}, and name {chat_name}. Please delete this chat or check if this account is present in this chat.")
 
-        await app.send_message(chat_id=chat_id,
-                               text=f"В чат с идентификатором — {chat_id} и именем {chat_name} не было отправлена рассылка. "
-                                    f"Пожалуйста, удалите этот чат или проверьте, присутствует ли этот аккаунт в этом чате.")
+        text = (
+            f"<i><b>Чат с ID: \"{chat_id}\" и названием: \"{chat_name}\". Бот не состоит в текущем чате, прошу удалить "
+            f"чат из аккаунта бота командой - <code>/delchat</code> или добавить аккаунт бота в чат. Рассылка "
+            f"в этот чат не будет осуществлен в этом цикле.</b></i>")
+
+        await app.send_message(chat_id=await get_main_chat_id(),
+                               text=text)
 
         return False
 
@@ -112,6 +116,9 @@ async def mailing() -> None:
             text = "<i><b>Текущий текст для рассылки потерян или был удален из чата, по этому, рассылка остановится.</b></i>"
 
             await set_flag(False)
+
+            logger.info(
+                f"[MAILING] The mailing message was deleted from the chat or lost. Mailing has been stopped.")
 
             return await app.send_message(chat_id=await get_main_chat_id(),
                                           text=text)
